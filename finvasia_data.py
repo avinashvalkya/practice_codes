@@ -225,8 +225,8 @@ if __name__ == '__main__':
         myspot.to_csv(filepath, index= False)
 
         files = {'document':open(filepath, 'rb')}
-        chatid = "@intraday_data" #https://t.me/intraday_data_bot
-        token = "6199737816:AAErn8y9OFl_CMHDz15XPH_j5Otzz_9NsWI"
+        chatid = "@" #
+        token = ""
         url = f"https://api.telegram.org/bot{token}/sendDocument?chat_id={chatid}&caption={filename}"
         print(url)
         resp = requests.post(url, files = files)
