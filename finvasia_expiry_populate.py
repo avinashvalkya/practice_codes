@@ -36,12 +36,10 @@ def get_expiry(Symbol):
     print(bn_sym_monthly)
     print(bn_sym_near)
     if(Symbol == 'NIFTY'):
-        bn_sym_near = bn_sym_near[:-6]
-        bn_sym_next = bn_sym_next[:-6]
+        bn_sym_near = bn_sym_near[:12]
+        bn_sym_next = bn_sym_next[:12]
     elif(Symbol == 'BANKNIFTY'):
-        bn_sym_near = bn_sym_near[:-6]
-        bn_sym_next = bn_sym_next[:-6]
+        bn_sym_near = bn_sym_near[:-16]
+        bn_sym_next = bn_sym_next[:-16]
     print('Near week expiry is : ', bn_sym_near, '\nNext week expiry is : ', bn_sym_next)
     return (bn_sym_near, bn_sym_next)
-
-get_expiry('NIFTY')
