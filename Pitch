@@ -1,0 +1,94 @@
+1. Problem Statement
+Current State in Finance & Planning Operations
+Organizations running Oracle EPM Cloud / Essbase rely heavily on structured cube data for planning, forecasting, and variance analysis. However:
+
+High Technical Dependency
+Business users must depend on IT/BI teams or power users to write MDX queries or SmartView reports.
+
+Slow Turnaround
+Ad hoc queries can take hours or days because of internal ticket queues and competing priorities.
+
+Limited Accessibility
+Non-technical teams shy away from cube querying because the interfaces are not intuitive.
+
+Low Data Democratization
+Only a small fraction of available cube data is directly accessed by decision-makers.
+
+Security and Governance Constraints
+In EPM Cloud, REST APIs have limitations (no direct dimension or MDX query access), making real-time self-service even harder.
+
+Impact on the Business:
+
+Delayed decision-making in areas like cash flow forecasting, budget reallocation, and cost control.
+
+IT/BI resource drain on repetitive query/report requests.
+
+Reduced ROI on expensive EPM investments due to underutilization.
+
+2. Proposed Solution
+An AI-powered, offline-capable, Natural Language Querying Platform for Oracle EPM Cloud / Essbase that removes the need for MDX or technical reporting knowledge.
+
+Core Components:
+
+Metadata-Aware RAG Layer
+
+Uses cube metadata (dimensions, members, aliases) extracted via bulk export or scheduled sync.
+
+Embeds this metadata in a local vector database for semantic search — works even in offline/restricted environments.
+
+Natural Language to Structured Query Conversion
+
+Converts user questions (“What was revenue in APAC last quarter?”) into safe, validated EPM queries.
+
+Executes via available APIs, SmartView automation scripts, or pre-processed exports.
+
+Validation & Security Enforcement
+
+Applies role-based security to ensure queries only return data the user is entitled to.
+
+Full audit trail of all queries and responses.
+
+Learning Feedback Loop
+
+Improves intent recognition over time based on user corrections.
+
+3. How it Works (High Level Flow)
+Metadata Collection → Regular offline export from EPM (via SmartView, reports, or job scheduler) → stored locally.
+
+Embedding Creation → LangChain + local embedding model (e.g., all-MiniLM-L6-v2 in SentenceTransformers) → stored in FAISS / Chroma DB.
+
+User Query → Parsed into semantic search → relevant members/dimensions retrieved.
+
+Query Assembly → Mapped to valid EPM execution method (SmartView macro, saved report run, etc.).
+
+Response Delivery → Returned in user-friendly format (pivot table, chart, summary text).
+
+4. Differentiators
+Offline-Capable → Works without internet access using local embeddings.
+
+Zero MDX Exposure to End Users → Technical complexity hidden completely.
+
+Security-First → Adheres to EPM role-based data access.
+
+Adaptive → Gets smarter over time with minimal IT overhead.
+
+Cross-Platform Ready → Can extend to other cube/data warehouse systems with similar structures.
+
+5. KPIs & Measurable Business Value
+KPI	Current State	Target After Implementation
+Ad hoc query turnaround time	4–24 hrs	< 2 min
+IT/BI workload for report requests	100% baseline	-40% to -60%
+Business user self-service adoption	< 25%	> 70%
+Decision latency	1–2 days	Same-day
+ROI on EPM investment	Low utilization	Full-scale utilization with direct business access
+
+6. Potential Future Roadmap
+Multilingual Support → Query in any language.
+
+Voice Interface → Ask cube questions via voice commands.
+
+Predictive Insights → AI not just answering, but forecasting.
+
+Cross-System Queries → Join EPM data with ERP, CRM, or data warehouse data.
+
+Mobile App Integration → Quick insights on the go.
