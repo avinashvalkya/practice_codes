@@ -1,26 +1,67 @@
-import os
-from langchain_openai import ChatOpenAI
+import gitlab
+import time
 
-# 1. Load your SQL files
-repo_path = "./your_git_repo/procedures/"
-sql_files = [f for f in os.listdir(repo_path) if f.endswith('.sql')]
+# Configuration
+GITLAB_URL = 'https://gitlab.com'
+PRIVATE_TOKEN = 'your_access_token'
+PROJECT_ID = 'your_project_id'
 
-llm = ChatOpenAI(model="gpt-4o")
+# Logic: {source_branch_pattern: target_branch}
+VALID_FLOWS = {
+    "develop": "sit",
+    "sit": "ple0"
+}
 
-for file in sql_files:
-    with open(os.path.join(repo_path, file), 'r') as f:
-        content = f.read()
+def is_feature_to_develop(source, target):
+    return source.startswith("feature") and target == "develop"
+
+def run_agent():
+    gl = gitlab.Gitlab(GITLAB_URL, private_token=PRIVATE_TOKEN)
+    project = gl.projects.get(PROJECT_ID)
+
+    print("Agent started: Monitoring Merge Requests...")
+
+    while True:
+        # Fetch open merge requests
+        mrs = project.mergerequests.list(state='opened', order_by='created_at')
+
+        for mr in mrs:
+            source = mr.source_branch
+            target = mr.target_branch
+            
+            # 1. Verify Branch Combination
+            is_valid_flow = False
+            if is_feature_to_develop(source, target):
+                is_valid_flow = True
+            elif VALID_FLOWS.get(source) == target:
+                is_valid_flow = True
+
+            if is_valid_flow:
+                # 2. Check if changes are less than 100
+                # Note: changes_count refers to the number of files/lines changed
+                if int(mr.changes_count) < 100:
+                    try:
+                        print(f"Conditions met for MR!{mr.iid} ({source} -> {target}). Merging...")
+                        mr.accept(merge_when_pipeline_succeeds=True)
+                    except Exception as e:
+                        print(f"Could not merge MR!{mr.iid}: {e}")
+                else:
+                    print(f"MR!{mr.iid} skipped: {mr.changes_count} changes (Threshold: 100)")
         
-    # 2. Ask the AI to explain the logic
-    prompt = f"""
-    Analyze the following SQL Procedure:
-    {content}
-    
-    Provide:
-    1. Logical Summary: What is the primary business goal?
-    2. Data Transformations: How is the data being modified?
-    3. Critical Filters: Are there any hidden 'WHERE' clauses or 'CASE' statements that change the output?
-    """
-    
-    response = llm.invoke(prompt)
-    print(f"--- Analysis for {file} ---\n{response.content}\n")
+        # Poll every 60 seconds to avoid rate limits
+        time.sleep(60)
+
+if __name__ == "__main__":
+    run_agent()
+
+
+
+Create an AI agent that checks continuously if any Merge requests have been submitted in gitlab and verifies if the source and target branch combination is one of the below
+
+feature* to develop 
+develop to sit
+sit to ple0
+
+If yes then check if the changes are less than 100. 
+
+If it satisfies all above then go ahead and merge
