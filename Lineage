@@ -1,0 +1,26 @@
+import os
+from langchain_openai import ChatOpenAI
+
+# 1. Load your SQL files
+repo_path = "./your_git_repo/procedures/"
+sql_files = [f for f in os.listdir(repo_path) if f.endswith('.sql')]
+
+llm = ChatOpenAI(model="gpt-4o")
+
+for file in sql_files:
+    with open(os.path.join(repo_path, file), 'r') as f:
+        content = f.read()
+        
+    # 2. Ask the AI to explain the logic
+    prompt = f"""
+    Analyze the following SQL Procedure:
+    {content}
+    
+    Provide:
+    1. Logical Summary: What is the primary business goal?
+    2. Data Transformations: How is the data being modified?
+    3. Critical Filters: Are there any hidden 'WHERE' clauses or 'CASE' statements that change the output?
+    """
+    
+    response = llm.invoke(prompt)
+    print(f"--- Analysis for {file} ---\n{response.content}\n")
